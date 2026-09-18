@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Toko — Prototipo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  :root{
+    --page-bg:#e9eaee;
+    --page-bg-dark:#1b1c20;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --page-bg: var(--page-bg-dark); }
+  }
+  :root[data-theme="dark"]{ --page-bg: var(--page-bg-dark); }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--page-bg);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:24px 12px;
+  }
+
+  /* ---------- Phone shell ---------- */
+  .phone{
+    position:relative;
+    width:390px; max-width:100%;
+    height:812px; max-height:92vh;
+    background:#0c0d10;
+    border-radius:46px;
+    padding:14px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+  }
+  .screen{
+    position:relative;
+    width:100%; height:100%;
+    background:#f4f5f7;
+    border-radius:34px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:26px; background:#0c0d10; border-radius:0 0 16px 16px; z-index:50;
+  }
+
+  /* ---------- Header ---------- */
+  .topbar{
+    flex:none; background:#fff; border-bottom:1px solid #ececec;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:16px 16px 10px; font-size:14px; color:#3b3f47; font-weight:600;
+  }
+  .topbar svg{flex:none;}
+  .topbar.home-bar{ justify-content:space-between; padding-top:16px;}
+  .navrow{
+    flex:none; background:#fff; border-bottom:1px solid #ececec;
+    display:grid; grid-template-columns:1fr auto 1fr;
+    align-items:center; padding:12px 16px 14px;
+  }
+  .navrow .back{ color:#6b7280; font-size:14.5px; font-weight:500; display:flex; align-items:center; gap:4px; cursor:pointer; justify-self:start; background:none; border:none; padding:0;font-family:inherit;}
+  .navrow .title{ font-weight:700; font-size:15px; color:#111827; text-align:center; }
+  .navrow .close{ justify-self:end; cursor:pointer; color:#6b7280; background:none;border:none;padding:4px; font-family:inherit;}
+
+  .pill-btn{
+    background:#f6c945; color:#1a1a1a; border:none; border-radius:999px;
+    font-weight:700; font-size:14.5px; padding:10px 18px; cursor:pointer;
+    display:flex; align-items:center; gap:6px; font-family:inherit;
+  }
+  .qmark{
+    width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e5e7eb;
+    display:flex;align-items:center;justify-content:center;color:#6b7280;font-weight:700;cursor:pointer;
+  }
+
+  /* ---------- Content ---------- */
+  .content{ flex:1; overflow-y:auto; padding:22px 20px 24px; }
+  .content::-webkit-scrollbar{width:0;}
+  h1.big{ font-size:26px; line-height:1.2; font-weight:800; color:#12141a; margin:0 0 4px; }
+  h1.step-title{ font-size:23px; line-height:1.28; font-weight:800; color:#12141a; margin:18px 0 8px;}
+  p.subtitle{ font-size:14.5px; color:#5b6370; line-height:1.5; margin:0 0 22px;}
+  label.field-label{ display:block; font-size:14px; font-weight:600; color:#374151; margin:18px 0 8px;}
+  label.field-label:first-of-type{margin-top:0;}
+
+  select, input[type=text], input[type=tel], input[type=email]{
+    width:100%; padding:14px 14px; border-radius:12px; border:1.5px solid #e2e4e9;
+    background:#fff; font-size:15px; color:#111827; font-family:inherit; appearance:none;
+  }
+  select.error, input.error{ border-color:#e0473e; }
+  .error-text{ color:#e0473e; font-size:12.5px; margin-top:6px; }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' stroke='%23374151' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  ::placeholder{color:#9aa0aa;}
+
+  .segmented{ display:flex; background:#e9ebef; border-radius:12px; padding:4px; gap:4px; }
+  .segmented button{
+    flex:1; border:none; background:transparent; padding:12px 8px; border-radius:9px;
+    font-weight:700; font-size:14.5px; color:#6b7280; cursor:pointer; font-family:inherit;
+  }
+  .segmented button.active{ background:#fff; color:#12141a; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  .bottombar{ flex:none; background:#fff; border-top:1px solid #ececec; padding:14px 20px 22px; }
+  .cta{
+    width:100%; padding:16px; border-radius:14px; border:none; font-size:15.5px; font-weight:700;
+    background:#f6c945; color:#1a1a1a; cursor:pointer; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .cta:disabled{ background:#f3e3ae; color:#c9b877; cursor:not-allowed; }
+  .cta.dark{ background:#12141a; color:#fff; }
+  .cta.dark:disabled{ background:#3c3f47; color:#7c7f88;}
+  .cta.outline{ background:#fff; border:1.5px solid #e2e4e9; color:#12141a; }
+
+  /* Home */
+  .stats{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0 26px;}
+  .stat-card{ background:#fff; border-radius:16px; padding:16px; }
+  .stat-card .num{ font-size:24px; font-weight:800; color:#12141a; display:flex; justify-content:space-between; align-items:center;}
+  .stat-card .lbl{ font-size:13.5px; color:#8a909b; margin-top:2px;}
+  .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;}
+  .section-head h2{ font-size:17px; margin:0; font-weight:800; color:#12141a;}
+  .section-head a{ font-size:13.5px; color:#a9820f; font-weight:600; text-decoration:underline; cursor:pointer;}
+  .promos{ display:flex; gap:12px; overflow-x:auto; margin:0 -20px; padding:0 20px 4px;}
+  .promo-card{ flex:none; width:220px; background:#fff; border-radius:16px; overflow:hidden;}
+  .promo-img{ height:110px; background:linear-gradient(135deg,#c7c9cf,#9a9ea6);}
+  .promo-body{ padding:14px;}
+  .promo-body b{ font-size:14.5px; display:block; margin-bottom:6px;}
+  .promo-body p{ font-size:12.5px; color:#8a909b; margin:0 0 12px; line-height:1.4;}
+  .promo-body button{ width:100%; padding:9px; border-radius:10px; border:1.5px solid #e2e4e9; background:#fff; font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit;}
+
+  .bottomnav{ flex:none; background:#fff; border-top:1px solid #ececec; padding:12px 30px 22px; display:flex; justify-content:space-between;}
+  .bottomnav .navicon{ color:#c7cad0; }
+  .bottomnav .navicon.active{ color:#f6c945; }
+
+  /* Sheet overlay */
+  .overlay{ position:absolute; inset:0; background:rgba(10,10,12,.45); display:flex; align-items:flex-end; z-index:80; border-radius:34px;}
+  .sheet{ background:#fff; width:100%; border-radius:22px 22px 0 0; padding:10px 20px 28px; animation:up .18s ease-out;}
+  @keyframes up{ from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+  .sheet .grabber{ width:36px; height:4px; background:#e2e4e9; border-radius:3px; margin:6px auto 14px;}
+  .sheet-item{ display:flex; justify-content:space-between; align-items:center; padding:16px 4px; font-size:15.5px; font-weight:600; color:#12141a; border-bottom:1px solid #f0f0f2; cursor:pointer;}
+  .sheet-item:last-child{ border-bottom:none;}
+  .sheet-item span.plus{ color:#8a909b; font-weight:400; font-size:19px;}
+
+  /* Modal (INE capture, carta) */
+  .modal-wrap{ position:absolute; inset:0; background:rgba(10,10,12,.55); display:flex; align-items:flex-end; z-index:90; border-radius:34px;}
+  .modal{ background:#fff; width:100%; max-height:88%; border-radius:20px 20px 0 0; padding:22px 22px 24px; overflow-y:auto; animation:up .18s ease-out; position:relative;}
+  .modal .xclose{ position:absolute; top:16px; right:18px; background:none;border:none;font-size:18px;color:#111;cursor:pointer;}
+  .modal h3{ font-size:19px; font-weight:800; margin:4px 30px 8px 0; color:#12141a;}
+  .modal p.desc{ font-size:14px; color:#5b6370; margin:0 0 16px; line-height:1.5;}
+  .id-frame{ border:1px solid #e2e4e9; border-radius:12px; overflow:hidden; margin-bottom:10px; background:#f4f5f7; min-height:170px; display:flex; align-items:center; justify-content:center;}
+  .id-frame img{ width:100%; display:block;}
+  .id-frame .placeholder{ color:#9aa0aa; font-size:13.5px; text-align:center; padding:30px 20px;}
+  .hint{ font-size:12px; color:#9aa0aa; text-align:center; margin-bottom:16px;}
+  .tips{ font-size:13px; color:#8a909b; margin-bottom:20px;}
+  .tips b{ display:block; color:#374151; font-size:13.5px; margin-bottom:6px;}
+  .modal-actions{ display:flex; gap:10px; }
+  .modal-actions button{ flex:1; padding:14px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .btn-outline{ background:#fff; border:1.5px solid #e2e4e9; color:#12141a; }
+  .btn-dark{ background:#12141a; border:none; color:#fff; }
+  .btn-dark:disabled{ background:#b9bcc3; }
+
+  .scan-box{ border:1.5px solid #dcdfe3; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; font-weight:700; font-size:14.5px; color:#12141a; cursor:pointer; margin-bottom:6px;}
+  .scan-box.done{ border-color:#0b7a4b; color:#0b7a4b; }
+  .scan-hint{ font-size:12.5px; color:#9aa0aa; margin-bottom:18px;}
+  hr.sep{ border:none; border-top:1px solid #ececec; margin:0 0 12px;}
+  .field-title{ font-size:14px; font-weight:800; color:#12141a; margin-bottom:2px;}
+
+  .steps-list{ margin-top:8px;}
+  .step-row{ display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #ececec; align-items:flex-start;}
+  .step-row:last-child{ border-bottom:none;}
+  .step-dot{ flex:none; width:30px; height:30px; border-radius:50%; border:2px solid #d7dae0; display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; color:#8a909b;}
+  .step-dot.spin{ border-top-color:#f6c945; animation:spin 1s linear infinite;}
+  .step-dot.done{ background:#0b7a4b; border-color:#0b7a4b; color:#fff;}
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .step-txt b{ display:block; font-size:14.5px; color:#12141a; margin-bottom:2px;}
+  .step-txt span{ font-size:13px; color:#8a909b;}
+  .progress-note{ font-size:12.5px; color:#8a909b; text-align:center; padding:12px 20px 0;}
+
+  .sig-pad-wrap{ border:1.5px solid #e2e4e9; border-radius:14px; background:#fff; margin-top:14px; overflow:hidden;}
+  canvas#sigCanvas{ width:100%; height:220px; display:block; touch-action:none;}
+  .link-btn{ background:none; border:none; color:#a9820f; font-weight:600; font-size:13.5px; text-decoration:underline; cursor:pointer; padding:0; font-family:inherit;}
+  .checkline{ display:flex; align-items:center; gap:9px; font-size:14px; color:#374151; margin-bottom:14px;}
+  .checkline input{ width:18px; height:18px; accent-color:#f6c945;}
+  .doc-btn{ width:100%; padding:14px; border:1.5px solid #e2e4e9; border-radius:12px; background:#fff; text-align:left; font-weight:700; font-size:14px; color:#12141a; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:inherit; margin-bottom:18px;}
+
+  .approved-icon{ width:56px; height:56px; border-radius:50%; background:#0b7a4b; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:18px;}
+  .approved-wrap{ background:#e8f4ee; height:100%; margin:-22px -20px; padding:26px 20px; }
+  .amount{ font-size:22px; font-weight:800; color:#12141a; margin-top:6px;}
+
+  .toast{ position:absolute; bottom:100px; left:20px; right:20px; background:#12141a; color:#fff; padding:12px 16px; border-radius:12px; font-size:13.5px; text-align:center; z-index:120; animation:up .18s ease-out;}
+  input[type=file]{ display:none; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen" id="screen"></div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" capture="environment">
+
+<script>
+const DEPENDENCIAS = ["Baja California Norte","Campeche","CDMX","Chihuahua","Estado de México","Guerrero","Hidalgo","Michoacán","Nacional","Nayarit","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosi","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
+const CONVENIOS = ["Educación","Gobierno","Pensiones"];
+
+let state = {
+  history: ['home'],
+  current: 'home',
+  modal: null,
+  toast: null,
+  dependencia: '', convenio: '', tipoFirma: 'autografa',
+  celular: '', email: '',
+  authDone: [false,false,false,false],
+  ineStage: 'idle', // idle -> frontPreview -> frontDone -> backPreview -> backDone
+  ineFrontImg: null, ineBackImg: null,
+  curp:'', rfc:'', nombre:'', apPaterno:'', apMaterno:'',
+  firmaData: null, guardarFirma: true,
+  pendingScan: null, // 'front' | 'back'
+  errors: {}
+};
+
+function nav(screen){ state.history.push(state.current); state.current=screen; state.modal=null; render(); scrollTop(); }
+function back(){ state.current = state.history.pop() || 'home'; state.modal=null; render(); scrollTop(); }
+function closeFlow(){ state.history=['home']; state.current='home'; state.modal=null; render(); }
+function scrollTop(){ const c=document.querySelector('.content'); if(c) c.scrollTop=0; }
+function showToast(msg){ state.toast=msg; render(); setTimeout(()=>{ state.toast=null; renderToastOnly(); }, 1800); }
+function renderToastOnly(){ const t=document.querySelector('.toast'); if(t) t.remove(); }
+
+function icon(name){
+  const icons = {
+    doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b3f47" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>',
+    check:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12l6 6L20 6"/></svg>',
+    upload:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12141a" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    home:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+    list:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+    bell:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>',
+    chart:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h18M6 20V10M12 20V4M18 20v6"/></svg>',
+  };
+  return icons[name]||'';
+}
+
+function topInstr(showNueva){
+  return `<div class="topbar ${showNueva?'home-bar':''}">
+    ${showNueva? `<div style="display:flex;align-items:center;gap:6px;">${icon('doc')}<span>Instrucciones</span></div>
+    <button class="pill-btn" onclick="openSheet()">+ Nueva</button>`
+    : `${icon('doc')}<span>Instrucciones</span>`}
+  </div>`;
+}
+function navRow(hasBack, title, hasClose){
+  return `<div class="navrow">
+    ${hasBack? `<button class="back" onclick="back()">&larr; Regresar</button>` : `<span></span>`}
+    <div class="title">${title||''}</div>
+    ${hasClose? `<button class="close" onclick="closeFlow()">&#10005;</button>` : `<span></span>`}
+  </div>`;
+}
+
+function render(){
+  const el = document.getElementById('screen');
+  let html = '';
+  switch(state.current){
+    case 'home': html = renderHome(); break;
+    case 'inicio': html = renderInicio(); break;
+    case 'identificacion': html = renderIdentificacion(); break;
+    case 'autenticacion': html = renderAutenticacion(); break;
+    case 'datosCliente': html = renderDatosCliente(); break;
+    case 'firmaAsesor': html = renderFirmaAsesor(); break;
+    case 'aprobado': html = renderAprobado(); break;
+  }
+  el.innerHTML = html;
+
+  if(state.modal==='sheet') el.insertAdjacentHTML('beforeend', renderSheet());
+  if(state.modal==='ineModal') el.insertAdjacentHTML('beforeend', renderIneModal());
+  if(state.modal==='carta') el.insertAdjacentHTML('beforeend', renderCartaModal());
+  if(state.toast) el.insertAdjacentHTML('beforeend', `<div class="toast">${state.toast}</div>`);
+
+  afterRender();
+}
+
+/* ---------------- HOME ---------------- */
+function renderHome(){
+  return `
+  ${topInstr(true)}
+  <div class="content">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <div class="qmark" onclick="showToast('Ayuda: aquí verías tutoriales rápidos.')">?</div>
+    </div>
+    <h1 class="big">Hola, Alejandro!</h1>
+    <div class="section-head" style="margin-top:22px;">
+      <h2>Tus solicitudes</h2><a onclick="showToast('Próximamente en este POC')">ver todas</a>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><div class="num">12 <span>&rarr;</span></div><div class="lbl">Totales</div></div>
+      <div class="stat-card"><div class="num">3 <span>&rarr;</span></div><div class="lbl">Guardadas</div></div>
+      <div class="stat-card"><div class="num">1 <span>&rarr;</span></div><div class="lbl">Regularizar</div></div>
+      <div class="stat-card"><div class="num">12 <span>&rarr;</span></div><div class="lbl">Aprobadas</div></div>
+    </div>
+    <div class="section-head">
+      <h2>Promociones y campanas</h2><a onclick="showToast('Próximamente en este POC')">ver todas</a>
+    </div>
+    <div class="promos">
+      <div class="promo-card">
+        <div class="promo-img"></div>
+        <div class="promo-body">
+          <b>promocion navidad</b>
+          <p>Consigue mas de 4 solicitudes este mes y recibiras 1,000mxn para cada solicitud extra.</p>
+          <button onclick="showToast('Promoción activada')">Activar</button>
+        </div>
+      </div>
+      <div class="promo-card">
+        <div class="promo-img"></div>
+        <div class="promo-body">
+          <b>promocion referidos</b>
+          <p>Activa a un cliente adicional y gana un bono especial este mes.</p>
+          <button onclick="showToast('Promoción activada')">Activar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottomnav">
+    <div class="navicon active">${icon('home')}</div>
+    <div class="navicon">${icon('list')}</div>
+    <div class="navicon">${icon('bell')}</div>
+    <div class="navicon">${icon('chart')}</div>
+  </div>`;
+}
+
+function renderSheet(){
+  return `<div class="overlay" onclick="closeSheetOverlay(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="grabber"></div>
+      <div class="sheet-item" onclick="startSolicitud()">Nueva solicitud de credito <span class="plus">+</span></div>
+      <div class="sheet-item" onclick="notAvailable()">Nueva consulta de capacidad <span class="plus">+</span></div>
+      <div class="sheet-item" onclick="notAvailable()">Nueva cotizacion <span class="plus">+</span></div>
+    </div>
+  </div>`;
+}
+function openSheet(){ state.modal='sheet'; render(); }
+function closeSheetOverlay(e){ if(e.target.classList.contains('overlay')){ state.modal=null; render(); } }
+function startSolicitud(){ state.modal=null; nav('inicio'); }
+function notAvailable(){ state.modal=null; render(); showToast('Disponible próximamente en este POC'); }
+
+/* ---------------- INICIO (dependencia/convenio/firma) ---------------- */
+function renderInicio(){
+  const depErr = state.errors.dependencia;
+  const conErr = state.errors.convenio;
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'',false)}
+  <div class="content">
+    <h1 class="step-title">Iniciemos la solicitud</h1>
+    <p class="subtitle">Para comenzar la solicitud debes seleccionar en que dependencia y convenio se encuentra registrado el cliente.</p>
+
+    <label class="field-label">Dependencia</label>
+    <select id="dependencia" class="${depErr?'error':''}" onchange="onDependencia(this.value)">
+      <option value="">Selecciona...</option>
+      ${DEPENDENCIAS.map(d=>`<option value="${d}" ${state.dependencia===d?'selected':''}>${d}</option>`).join('')}
+    </select>
+    ${depErr? `<div class="error-text">Campo obligatorio</div>`:''}
+
+    <label class="field-label">Convenio</label>
+    <select id="convenio" ${!state.dependencia?'disabled':''} class="${conErr?'error':''}" onchange="onConvenio(this.value)">
+      <option value="">Selecciona...</option>
+      ${CONVENIOS.map(c=>`<option value="${c}" ${state.convenio===c?'selected':''}>${c}</option>`).join('')}
+    </select>
+    ${conErr? `<div class="error-text">Campo obligatorio</div>`:''}
+
+    <label class="field-label">Tipo de firma</label>
+    <div class="segmented">
+      <button class="${state.tipoFirma==='autografa'?'active':''}" onclick="setFirma('autografa')">Firma autografa</button>
+      <button class="${state.tipoFirma==='digital'?'active':''}" onclick="setFirma('digital')">Firma digital</button>
+    </div>
+  </div>
+  <div class="bottombar">
+    <button class="cta" onclick="tryComenzar()">Comenzar solicitud &rarr;</button>
+  </div>`;
+}
+function onDependencia(v){ state.dependencia=v; state.convenio=''; state.errors.dependencia=false; render(); }
+function onConvenio(v){ state.convenio=v; state.errors.convenio=false; render(); }
+function setFirma(v){ state.tipoFirma=v; render(); }
+function tryComenzar(){
+  state.errors.dependencia = !state.dependencia;
+  state.errors.convenio = !state.convenio;
+  if(state.errors.dependencia || state.errors.convenio){ render(); return; }
+  nav('identificacion');
+}
+
+/* ---------------- IDENTIFICACION ---------------- */
+function renderIdentificacion(){
+  const valid = state.celular.replace(/\D/g,'').length>=10 && /\S+@\S+\.\S+/.test(state.email);
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'Identificacion',true)}
+  <div class="content">
+    <h1 class="step-title">Empecemos por autenticar al cliente</h1>
+    <p class="subtitle">Introduce su numero de celular. Enviaremos un codigo a su telefono para realizar la autenticacion.</p>
+
+    <label class="field-label">Numero de celular del cliente</label>
+    <input type="tel" placeholder="55 0000 0000" value="${state.celular}" oninput="state.celular=this.value">
+
+    <label class="field-label">Email del cliente</label>
+    <input type="email" placeholder="cliente@correo.com" value="${state.email}" oninput="state.email=this.value">
+
+    <p class="subtitle" style="margin-top:16px;">Si el cliente esta contigo tendras la opcion de llevar a cabo el proceso de biometricos desde tu dispositivo.</p>
+  </div>
+  <div class="bottombar">
+    <button class="cta" ${valid?'':'disabled'} onclick="goAuten()">Iniciar validacion &rarr;</button>
+  </div>`;
+}
+function goAuten(){ state.authDone=[false,false,false,false]; nav('autenticacion'); runAuthSimulation(); }
+
+/* ---------------- AUTENTICACION ---------------- */
+const AUTH_STEPS = [
+  {t:'Validar celular', s:'Codigo de 6 digitos (OTP)'},
+  {t:'Carga del INE', s:'Frente y reverso'},
+  {t:'Biometricos', s:'Selfie de validacion de identidad'},
+  {t:'Carta de consulta al portal', s:'Firma en pantalla'}
+];
+let authTimer=null;
+function runAuthSimulation(){
+  clearInterval(authTimer);
+  let i=0;
+  authTimer = setInterval(()=>{
+    if(state.current!=='autenticacion'){ clearInterval(authTimer); return; }
+    if(i<4){ state.authDone[i]=true; i++; render(); }
+    else clearInterval(authTimer);
+  },1400);
+}
+function renderAutenticacion(){
+  const doneCount = state.authDone.filter(Boolean).length;
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'Autenticacion',true)}
+  <div class="content">
+    <h1 class="step-title">El cliente esta autenticando su celular</h1>
+    <p class="subtitle">Enviamos una liga por WhatsApp al cliente. El avance continua aunque salgas de esta pantalla; el tiempo depende del cliente.</p>
+    <div style="font-size:13px;color:#8a909b;font-weight:700;margin-bottom:4px;">${doneCount} de 4 completados</div>
+    <div class="steps-list">
+      ${AUTH_STEPS.map((s,idx)=>{
+        const done = state.authDone[idx];
+        const active = !done && (idx===0 || state.authDone[idx-1]);
+        return `<div class="step-row">
+          <div class="step-dot ${done?'done':(active?'spin':'')}">${done? icon('check').replace('26','14').replace('26','14') : (idx+1)}</div>
+          <div class="step-txt"><b>${s.t}</b><span>${s.s}</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="bottombar">
+    <p class="progress-note" style="padding:0 0 12px;">Si el cliente esta contigo en sucursal, puedes hacerlo en este dispositivo.</p>
+    <button class="cta outline" onclick="goDatosCliente()">Continuar captura manual</button>
+  </div>`;
+}
+function goDatosCliente(){ nav('datosCliente'); }
+
+/* ---------------- DATOS DEL CLIENTE ---------------- */
+function renderDatosCliente(){
+  const scanned = state.ineStage==='backDone';
+  const canContinue = scanned && state.curp && state.nombre;
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'Datos del cliente',true)}
+  <div class="content">
+    <h1 class="step-title">Tomemos los datos personales del cliente</h1>
+    <p class="subtitle">Puedes llenar la informacion o escanear la identificacion oficial.</p>
+
+    <div class="field-title">Escaneo</div>
+    <hr class="sep">
+    <div class="scan-box ${scanned?'done':''}" onclick="startScan()">
+      ${scanned? 'INE escaneada' : 'Escanear INE'} <span>${scanned? '&#10003;' : '&#8593;'}</span>
+    </div>
+    ${scanned? `<div class="scan-hint">Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es necesario.</div>` : ''}
+
+    <div class="field-title" style="margin-top:22px;">Identificacion</div>
+    <hr class="sep">
+    <label class="field-label" style="margin-top:0;">CURP</label>
+    <input type="text" maxlength="18" placeholder="18 caracteres" value="${state.curp}" oninput="state.curp=this.value.toUpperCase()">
+
+    ${scanned? `
+    <label class="field-label">RFC</label>
+    <input type="text" value="${state.rfc}" oninput="state.rfc=this.value.toUpperCase()">
+
+    <div class="field-title" style="margin-top:22px;">Datos personales</div>
+    <hr class="sep">
+    <label class="field-label" style="margin-top:0;">Nombre</label>
+    <input type="text" value="${state.nombre}" oninput="state.nombre=this.value">
+
+    <label class="field-label">Apellido paterno</label>
+    <input type="text" value="${state.apPaterno}" oninput="state.apPaterno=this.value">
+
+    <label class="field-label">Apellido materno</label>
+    <input type="text" value="${state.apMaterno}" oninput="state.apMaterno=this.value">
+    ` : ''}
+  </div>
+  <div class="bottombar">
+    <button class="cta" ${canContinue?'':'disabled'} onclick="nav('firmaAsesor')">Continuar &rarr;</button>
+  </div>`;
+}
+function startScan(){
+  if(state.ineStage==='backDone'){
+    // allow re-scan
+    state.ineStage='idle'; state.ineFrontImg=null; state.ineBackImg=null;
+  }
+  state.modal='ineModal';
+  state.pendingScan='front';
+  state.ineStage='capturingFront';
+  render();
+  triggerFile();
+}
+function triggerFile(){ document.getElementById('fileInput').value=''; document.getElementById('fileInput').click(); }
+
+function renderIneModal(){
+  const stage = state.ineStage;
+  if(stage==='capturingFront' || stage==='frontPreview'){
+    const img = state.ineFrontImg;
+    return `<div class="modal-wrap"><div class="modal">
+      <button class="xclose" onclick="closeIneModal()">&#10005;</button>
+      <h3>Capturar el frente de la INE</h3>
+      <p class="desc">Coloca la parte frontal de la INE del cliente.</p>
+      <div class="id-frame">${img? `<img src="${img}">` : `<div class="placeholder">Toca "Escanear" para elegir la foto del frente</div>`}</div>
+      <div class="hint">Doble tap para acercar y verificar que se lea bien</div>
+      <div class="tips"><b>Consejos</b>Consigue que el documento entre completamente en la pantalla.</div>
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="triggerFile()">${img?'Escanea de nuevo':'Escanear'}</button>
+        <button class="btn-dark" ${img?'':'disabled'} onclick="acceptFront()">Aceptar captura &#10003;</button>
+      </div>
+    </div></div>`;
+  }
+  if(stage==='frontDone'){
+    return `<div class="modal-wrap"><div class="modal">
+      <button class="xclose" onclick="closeIneModal()">&#10005;</button>
+      <h3>Frente capturado &#10003;</h3>
+      <p class="desc">Ahora captura el reverso de la INE del cliente.</p>
+      <div class="modal-actions">
+        <button class="btn-dark" style="flex:1;" onclick="startBackScan()">Escanear el reverso &rarr;</button>
+      </div>
+    </div></div>`;
+  }
+  if(stage==='capturingBack' || stage==='backPreview'){
+    const img = state.ineBackImg;
+    return `<div class="modal-wrap"><div class="modal">
+      <button class="xclose" onclick="closeIneModal()">&#10005;</button>
+      <h3>Capturar el reverso de la INE</h3>
+      <p class="desc">Ahora la parte trasera de la INE del cliente.</p>
+      <div class="id-frame">${img? `<img src="${img}">` : `<div class="placeholder">Toca "Escanear" para elegir la foto del reverso</div>`}</div>
+      <div class="hint">Doble tap para acercar y verificar que se lea bien</div>
+      <div class="tips"><b>Consejos</b>Consigue que el documento entre completamente en la pantalla.</div>
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="triggerFile()">${img?'Escanea de nuevo':'Escanear'}</button>
+        <button class="btn-dark" ${img?'':'disabled'} onclick="acceptBack()">Aceptar captura &#10003;</button>
+      </div>
+    </div></div>`;
+  }
+  return '';
+}
+function closeIneModal(){ state.modal=null; if(state.ineStage!=='backDone'){ state.ineStage= state.ineStage==='idle'?'idle':'idle'; } render(); }
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('fileInput').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      if(state.pendingScan==='front'){ state.ineFrontImg = ev.target.result; state.ineStage='frontPreview'; }
+      else { state.ineBackImg = ev.target.result; state.ineStage='backPreview'; }
+      render();
+    };
+    reader.readAsDataURL(file);
+  });
+  render();
+});
+
+function acceptFront(){ state.ineStage='frontDone'; render(); }
+function startBackScan(){ state.pendingScan='back'; state.ineStage='capturingBack'; render(); triggerFile(); }
+function acceptBack(){
+  state.ineStage='backDone';
+  state.modal=null;
+  // simulate OCR fill
+  state.curp = state.curp || 'PEMJ850624MDFRRL09';
+  state.rfc = state.rfc || 'PEMJ850624PL9';
+  state.nombre = state.nombre || 'Sara';
+  state.apPaterno = state.apPaterno || 'Pérez';
+  state.apMaterno = state.apMaterno || 'Mendoza';
+  render();
+}
+
+/* ---------------- FIRMA ASESOR ---------------- */
+let sigCtx=null, drawing=false, hasSig=false;
+function renderFirmaAsesor(){
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'Firma del asesor',true)}
+  <div class="content">
+    <h1 class="step-title">Firmar carta de consulta al portal de dependencia</h1>
+    <p class="subtitle">Realiza tu firma dentro del recuadro. Si necesitas corregirla usa "Borrar firma".</p>
+
+    <button class="doc-btn" onclick="openCarta()">${icon('doc')} Ver la carta que vas a firmar</button>
+
+    <label class="checkline"><input type="checkbox" id="guardarFirma" ${state.guardarFirma?'checked':''} onchange="state.guardarFirma=this.checked"> Guardar mi firma para proximas solicitudes.</label>
+
+    <div class="sig-pad-wrap"><canvas id="sigCanvas"></canvas></div>
+    <div style="margin-top:12px;"><button class="link-btn" onclick="clearSig()">Borrar firma &#10005;</button></div>
+  </div>
+  <div class="bottombar">
+    <button class="cta" id="confirmBtn" disabled onclick="nav('aprobado')">Confirmar &rarr;</button>
+  </div>`;
+}
+function openCarta(){ state.modal='carta'; render(); }
+function renderCartaModal(){
+  const nombreCompleto = [state.nombre, state.apPaterno, state.apMaterno].filter(Boolean).join(' ') || 'el cliente';
+  return `<div class="modal-wrap"><div class="modal">
+    <button class="xclose" onclick="state.modal=null; render();">&#10005;</button>
+    <h3>Carta de consulta al portal</h3>
+    <p class="desc" style="max-height:280px;overflow-y:auto;">
+      Por medio de la presente, ${nombreCompleto} autoriza a la institución a realizar la consulta de su historial y capacidad de pago
+      ante la dependencia y convenio seleccionados, con el único fin de evaluar la solicitud de crédito en curso.
+      Esta autorización es válida únicamente para este trámite y no compromete al cliente a la contratación del producto.
+    </p>
+    <div class="modal-actions"><button class="btn-dark" style="flex:1;" onclick="state.modal=null; render();">Cerrar</button></div>
+  </div></div>`;
+}
+function clearSig(){
+  if(sigCtx){ sigCtx.clearRect(0,0,sigCtx.canvas.width, sigCtx.canvas.height); }
+  hasSig=false; updateConfirmBtn();
+}
+function updateConfirmBtn(){
+  const b=document.getElementById('confirmBtn');
+  if(b) b.disabled = !hasSig;
+}
+function setupSigCanvas(){
+  const canvas = document.getElementById('sigCanvas');
+  if(!canvas) return;
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
+  sigCtx = canvas.getContext('2d');
+  sigCtx.scale(dpr,dpr);
+  sigCtx.strokeStyle='#12141a'; sigCtx.lineWidth=2.4; sigCtx.lineCap='round'; sigCtx.lineJoin='round';
+  let last=null;
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    const p = e.touches? e.touches[0] : e;
+    return {x:p.clientX-r.left, y:p.clientY-r.top};
+  }
+  function start(e){ drawing=true; last=pos(e); e.preventDefault(); }
+  function move(e){
+    if(!drawing) return;
+    const p = pos(e);
+    sigCtx.beginPath(); sigCtx.moveTo(last.x,last.y); sigCtx.lineTo(p.x,p.y); sigCtx.stroke();
+    last=p; hasSig=true; updateConfirmBtn();
+    e.preventDefault();
+  }
+  function end(){ drawing=false; }
+  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',end);
+}
+
+/* ---------------- APROBADO ---------------- */
+function renderAprobado(){
+  const nombre = state.nombre || 'el cliente';
+  return `
+  ${topInstr(false)}
+  ${navRow(true,'',true)}
+  <div class="content approved-wrap">
+    <div class="approved-icon">${icon('check')}</div>
+    <h1 class="step-title" style="margin-top:0;">&iexcl;Aprobado! Comencemos con una buena oferta para ${nombre}</h1>
+    <p class="subtitle">El cliente tiene una capacidad de pago de</p>
+    <div class="amount">$1,822.50mxn</div>
+  </div>
+  <div class="bottombar">
+    <button class="cta dark" onclick="finishFlow()">Continuar &rarr;</button>
+  </div>`;
+}
+function finishFlow(){
+  // reset for a new demo run
+  state = {history:['home'], current:'home', modal:null, toast:null,
+    dependencia:'',convenio:'',tipoFirma:'autografa', celular:'',email:'',
+    authDone:[false,false,false,false], ineStage:'idle', ineFrontImg:null, ineBackImg:null,
+    curp:'',rfc:'',nombre:'',apPaterno:'',apMaterno:'', firmaData:null, guardarFirma:true,
+    pendingScan:null, errors:{}};
+  render();
+}
+
+function afterRender(){
+  if(state.current==='firmaAsesor' && !state.modal){ setupSigCanvas(); }
+}
+</script>
+</body>
+</html>
